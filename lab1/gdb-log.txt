@@ -1,0 +1,77 @@
+# Prvo cemo pokrenuti program da vidimo kako se on izvrsava.
+
+Starting program: /home/kennynext/Desktop/PURV/git folder/purv-2023/lab1/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+__strlen_avx2 () at ../sysdeps/x86_64/multiarch/strlen-avx2.S:74
+74	../sysdeps/x86_64/multiarch/strlen-avx2.S: No such file or directory.
+
+#Vidimo da program dobija segmentation fault gresku unutar funckije __strlen_avx2.
+
+
+# Da bismo bolje razumjeli gdje se greska mogla desiti, prvo cemo postaviti breakpoint na main, pa disasemblirati kod radi njegove analize.
+
+
+Breakpoint 1 at 0x555555555151: file zadaca_luka.c, line 9.
+Starting program: /home/kennynext/Desktop/PURV/git folder/purv-2023/lab1/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_luka.c:9
+9	    printf("%s\n", array[0]);
+Dump of assembler code for function main:
+zadaca_luka.c:
+7	int main() {
+   0x0000555555555149 <+0>:	endbr64 
+   0x000055555555514d <+4>:	push   %rbp
+   0x000055555555514e <+5>:	mov    %rsp,%rbp
+
+8	
+9	    printf("%s\n", array[0]);
+=> 0x0000555555555151 <+8>:	movzbl 0x2eb8(%rip),%eax        # 0x555555558010 <array>
+   0x0000555555555158 <+15>:	movsbl %al,%eax
+   0x000055555555515b <+18>:	mov    %eax,%esi
+   0x000055555555515d <+20>:	lea    0xea0(%rip),%rax        # 0x555555556004
+   0x0000555555555164 <+27>:	mov    %rax,%rdi
+   0x0000555555555167 <+30>:	mov    $0x0,%eax
+   0x000055555555516c <+35>:	call   0x555555555050 <printf@plt>
+
+10	
+11	    return (0);
+   0x0000555555555171 <+40>:	mov    $0x0,%eax
+
+12	}
+   0x0000555555555176 <+45>:	pop    %rbp
+   0x0000555555555177 <+46>:	ret    
+End of assembler dump.
+
+# Dakle, vidimo da se nas program sastoji od samo jedne linije, poziva printf funckije stoga s pravom mozemo posumnjati da se unutar nje javlja greska.
+
+
+# Posto je printf ozbiljna funckija iz C standardne biblioteke koriscena u velikoj mjeri, sa razumijevanjem mozemo pretpostaviti da greska nije zbog koda unutar same funkcije.
+
+# Ova analiza nas vodi ka zakljucku da problem mora lezati u argumentima koje proslijedjujemo toj funkciji, a oni se proslijedjuju preko registara rdi i rsi.
+
+# Stoga, posmatracemo sta se desava sa ovim registrima kroz proces pripreme za poziv printf-a.
+
+
+1: /a $rdi = 0x1
+2: /a $rsi = 0x7fffffffdf58
+9	    printf("%s\n", array[0]);
+1: /a $rdi = 0x1
+2: /a $rsi = 0x7fffffffdf58
+0x000055555555515b	9	    printf("%s\n", array[0]);
+1: /a $rdi = 0x1
+2: /a $rsi = 0x7fffffffdf58
+0x000055555555515d	9	    printf("%s\n", array[0]);
+1: /a $rdi = 0x1
+2: /a $rsi = 0x68
+
+# Dakle, nakon izvrsavanja prethodne instrukcije, u registar rsi stavljen je prvi argument - array[0] = 0x68 (ascii kod za 'h').
+# Ukoliko razumijemo kako radi funckija printf sa datim argumentima, dalje debagovanje nam nije ni potrebno.
+# Naime, format %s zahtijeva kao argument pokazivacki tip, koji je adresa koja vodi do prvog karaktera nekog stringa.
+# U nasem slucaju mi smo proslijedili kao taj argument, 0x68 sto znaci da ce se kasnije u funckiji printf pokusati pristupiti upravo toj adresi.
+# S obzirom da adresa 0x68 nije dozvoljena za pristup nasem programu, niti znamo sta je na njoj, bilo kakav pokusaj dereferenciranja dovesce to segmentation
+fault-a.
