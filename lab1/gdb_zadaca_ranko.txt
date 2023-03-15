@@ -1,3 +1,7 @@
+
+
+
+
 Breakpoint 1 at 0x117a: file zadaca_ranko.c, line 18.
 Breakpoint 2 at 0x1157: file zadaca_ranko.c, line 6.
 Starting program: /home/mirosav/Desktop/PuRV/gdb_zadaca/zadaca 
