@@ -1,0 +1,103 @@
+Breakpoint 1 at 0x117a: file zadaca_ranko.c, line 18.
+Breakpoint 2 at 0x1157: file zadaca_ranko.c, line 6.
+Starting program: /home/mirosav/Desktop/PuRV/gdb_zadaca/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_ranko.c:18
+18	     suma=add_numbers(n1,n2);
+Dump of assembler code for function main:
+   0x0000555555555167 <+0>:	endbr64 
+   0x000055555555516b <+4>:	push   %rbp
+   0x000055555555516c <+5>:	mov    %rsp,%rbp
+   0x000055555555516f <+8>:	sub    $0x10,%rsp
+   0x0000555555555173 <+12>:	movl   $0x1,-0x8(%rbp)
+=> 0x000055555555517a <+19>:	mov    -0x4(%rbp),%edx
+   0x000055555555517d <+22>:	mov    -0x8(%rbp),%eax
+   0x0000555555555180 <+25>:	mov    %edx,%esi
+   0x0000555555555182 <+27>:	mov    %eax,%edi
+   0x0000555555555184 <+29>:	call   0x555555555149 <add_numbers>
+   0x0000555555555189 <+34>:	mov    %eax,0x2e8d(%rip)        # 0x55555555801c <suma>
+   0x000055555555518f <+40>:	mov    0x2e87(%rip),%edx        # 0x55555555801c <suma>
+   0x0000555555555195 <+46>:	mov    0x2e74(%rip),%rax        # 0x555555558010 <poruka.0>
+   0x000055555555519c <+53>:	mov    %rax,%rsi
+   0x000055555555519f <+56>:	lea    0xe5e(%rip),%rax        # 0x555555556004
+   0x00005555555551a6 <+63>:	mov    %rax,%rdi
+   0x00005555555551a9 <+66>:	mov    $0x0,%eax
+   0x00005555555551ae <+71>:	call   0x555555555050 <printf@plt>
+   0x00005555555551b3 <+76>:	mov    $0x0,%eax
+   0x00005555555551b8 <+81>:	leave  
+   0x00005555555551b9 <+82>:	ret    
+End of assembler dump.
+1: $rsp = (void *) 0x7fffffffde10
+2: $esi = -8392
+3: $edi = 1
+#0  main () at zadaca_ranko.c:18
+
+Breakpoint 2, add_numbers (n1=1, n2=0) at zadaca_ranko.c:6
+6	     int sum=n1+n2;
+1: $rsp = (void *) 0x7fffffffde00
+2: $esi = 0
+3: $edi = 1
+Dump of assembler code for function add_numbers:
+   0x0000555555555149 <+0>:	endbr64 
+   0x000055555555514d <+4>:	push   %rbp
+   0x000055555555514e <+5>:	mov    %rsp,%rbp
+   0x0000555555555151 <+8>:	mov    %edi,-0x14(%rbp)
+   0x0000555555555154 <+11>:	mov    %esi,-0x18(%rbp)
+=> 0x0000555555555157 <+14>:	mov    -0x14(%rbp),%edx
+   0x000055555555515a <+17>:	mov    -0x18(%rbp),%eax
+   0x000055555555515d <+20>:	add    %edx,%eax
+   0x000055555555515f <+22>:	mov    %eax,-0x4(%rbp)
+   0x0000555555555162 <+25>:	mov    -0x4(%rbp),%eax
+   0x0000555555555165 <+28>:	pop    %rbp
+   0x0000555555555166 <+29>:	ret    
+End of assembler dump.
+7	     return sum;
+1: $rsp = (void *) 0x7fffffffde00
+2: $esi = 0
+3: $edi = 1
+4: $eax = 1
+8	}
+1: $rsp = (void *) 0x7fffffffde00
+2: $esi = 0
+3: $edi = 1
+4: $eax = 1
+Note: breakpoint 1 also set at pc 0x55555555517a.
+Breakpoint 3 at 0x55555555517a: file zadaca_ranko.c, line 18.
+Continuing.
+[Inferior 1 (process 7328) exited normally]
+The program is not being run.
+1: $rsp = <error: No registers.>
+2: $esi = <error: No registers.>
+3: $edi = <error: No registers.>
+4: $eax = <error: No registers.>
+Starting program: /home/mirosav/Desktop/PuRV/gdb_zadaca/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_ranko.c:18
+18	     suma=add_numbers(n1,n2);
+1: $rsp = (void *) 0x7fffffffde10
+2: $esi = -8392
+3: $edi = 1
+4: $eax = 1431654759
+Continuing.
+
+Breakpoint 2, add_numbers (n1=1, n2=0) at zadaca_ranko.c:6
+6	     int sum=n1+n2;
+1: $rsp = (void *) 0x7fffffffde00
+2: $esi = 0
+3: $edi = 1
+4: $eax = 1
+0x7fffffffde00:	0xffffde20	0x00007fff	0x55555189	0x00005555
+0x7fffffffde10:	0x00000000	0x00000000	0x00000001	0x00000000
+0x7fffffffde20:	0x00000001	0x00000000	0xf7c29d90	0x00007fff
+0x7fffffffde30:	0x00000000	0x00000000	0x55555167	0x00005555
+0x7fffffffde40:	0x00000000	0x00000001	0xffffdf38	0x00007fff
+0x7fffffffde50:	0x00000000	0x00000000	0xa3914a62	0xbd5d22bd
+0x7fffffffde60:	0xffffdf38	0x00007fff	0x55555167	0x00005555
+0x7fffffffde70:	0x55557dc0	0x00005555	0xf7ffd040	0x00007fff
+Continuing.
+[Inferior 1 (process 7485) exited normally]
+The program is not being run.
