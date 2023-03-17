@@ -1,0 +1,226 @@
+
+ # Za pocetak da pokrenemo program i posmatramo sta se desava 
+Reading symbols from ./bin/zadaca...
+Starting program: /home/nemanja/Desktop/PuRV/Lab vjezbe/zadaci/lab1/bin/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Program received signal SIGSEGV, Segmentation fault.
+_IO_gets (buf=0x0) at ./libio/iogets.c:53
+53	./libio/iogets.c: No such file or directory.
+Continuing.
+
+Program terminated with signal SIGSEGV, Segmentation fault.
+The program no longer exists.
+
+# Desila se tzv. sementation fault, pri pozivu funkcije gets tj. unutar te funkcije u iogets.c na liniji 53 
+# Da bismo bolje uocili sta se desava potrebno je koristiti komande gdb dibagera 
+# Npr postaviti neke breakpoint-e u kodu 
+
+48	in ./libio/iogets.c
+Breakpoint 1 at 0x5555555551b5: file zadaca_nemanja.c, line 5.
+
+Starting program: /home/nemanja/Desktop/PuRV/Lab vjezbe/zadaci/lab1/bin/zadaca 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_nemanja.c:5
+5	      puts("Enter String");
+
+# Ispis koda 
+1	// pitanje sa stackoverflowa
+2	int main(void){
+3	      char *s;
+4	      int ln;
+5	      puts("Enter String");
+6	      // scanf("%s", s);
+7	      gets(s);
+8	      ln = strlen(s); // remove this line to end seg fault
+9	      char *dyn_s = (char*) malloc (strlen(s)+1); //strlen(s) is used here as well but doesn't change outcome
+10	      dyn_s = s;
+
+Note: breakpoint 1 also set at pc 0x5555555551b5.
+Breakpoint 2 at 0x5555555551b5: file zadaca_nemanja.c, line 5.
+Breakpoint 3 at 0x5555555551c4: file zadaca_nemanja.c, line 7.
+
+# Trenutno se nalazimo 
+#0  main () at zadaca_nemanja.c:5
+
+Dump of assembler code for function main:
+zadaca_nemanja.c:
+2	int main(void){
+   0x00005555555551a9 <+0>:	endbr64 
+   0x00005555555551ad <+4>:	push   %rbp
+   0x00005555555551ae <+5>:	mov    %rsp,%rbp
+   0x00005555555551b1 <+8>:	sub    $0x20,%rsp
+
+3	      char *s;
+4	      int ln;
+5	      puts("Enter String");
+=> 0x00005555555551b5 <+12>:	lea    0xe48(%rip),%rax        # 0x555555556004
+   0x00005555555551bc <+19>:	mov    %rax,%rdi
+   0x00005555555551bf <+22>:	call   0x555555555080 <puts@plt>
+
+6	      // scanf("%s", s);
+7	      gets(s);
+   0x00005555555551c4 <+27>:	mov    -0x10(%rbp),%rax
+   0x00005555555551c8 <+31>:	mov    %rax,%rdi
+   0x00005555555551cb <+34>:	mov    $0x0,%eax
+   0x00005555555551d0 <+39>:	call   0x5555555550a0 <gets@plt>
+Quit
+
+# Komandom step(s) krecemo se kroz kod korak po korak 
+__GI__IO_puts (str=0x555555556004 "Enter String") at ./libio/ioputs.c:33
+33	./libio/ioputs.c: No such file or directory.
+35	in ./libio/ioputs.c
+__strlen_sse2 () at ../sysdeps/x86_64/multiarch/strlen-vec.S:41
+41	../sysdeps/x86_64/multiarch/strlen-vec.S: No such file or directory.
+
+# Mana ove komande je sto ulazi u funkcije, kao npr. puts ovde, sto nas ne interesuje, pa je bolje mozda korisiti next komandu 
+
+# Preskocicemo na sljedeci breakpoint 
+Continuing.
+
+Breakpoint 3, main () at zadaca_nemanja.c:7
+7	      gets(s);
+Dump of assembler code for function main:
+zadaca_nemanja.c:
+2	int main(void){
+   0x00005555555551a9 <+0>:	endbr64 
+   0x00005555555551ad <+4>:	push   %rbp
+   0x00005555555551ae <+5>:	mov    %rsp,%rbp
+   0x00005555555551b1 <+8>:	sub    $0x20,%rsp
+
+3	      char *s;
+4	      int ln;
+5	      puts("Enter String");
+   0x00005555555551b5 <+12>:	lea    0xe48(%rip),%rax        # 0x555555556004
+   0x00005555555551bc <+19>:	mov    %rax,%rdi
+   0x00005555555551bf <+22>:	call   0x555555555080 <puts@plt>
+
+6	      // scanf("%s", s);
+7	      gets(s);
+=> 0x00005555555551c4 <+27>:	mov    -0x10(%rbp),%rax
+   0x00005555555551c8 <+31>:	mov    %rax,%rdi
+   0x00005555555551cb <+34>:	mov    $0x0,%eax
+   0x00005555555551d0 <+39>:	call   0x5555555550a0 <gets@plt>
+Quit
+
+# funkciji gets se prosljedjuje promjenljiva s, moguce je pogledati njenu vrijednost 
+$1 = 0x0
+1: /a s = 0x0
+2: /x s = 0x0
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+_IO_gets (buf=0x0) at ./libio/iogets.c:53
+53	./libio/iogets.c: No such file or directory.
+Continuing.
+
+Program terminated with signal SIGSEGV, Segmentation fault.
+The program no longer exists.
+# Koristenjem display i print komandi vidimo vrijednost promjenljivih i vidimo da je s sadrzala 0 
+# to je dovelo do seg fault, jer vrijednost "s" nije bila inicijalizovanaStarting program: /home/nemanja/Desktop/PuRV/Lab vjezbe/zadaci/lab1/bin/zadaca 
+
+
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_nemanja.c:5
+5	      puts("Enter String");
+1: /a s = 0x0
+2: /x s = 0x0
+Hardware watchpoint 4: s
+
+Breakpoint 3, main () at zadaca_nemanja.c:7
+7	      gets(s);
+1: /a s = 0x0
+2: /x s = 0x0
+
+Program received signal SIGSEGV, Segmentation fault.
+_IO_gets (buf=0x0) at ./libio/iogets.c:53
+53	./libio/iogets.c: No such file or directory.
+
+Program terminated with signal SIGSEGV, Segmentation fault.
+The program no longer exists.
+
+
+# Ukoliko bi se uvela jednostavna modifikacija u program, on bi radio sasvim uredno 
+# Ucitacemo izmjenjeni izvorni kod 
+
+Reading symbols from ./bin/zadaca1...
+1	// pitanje sa stackoverflowa
+2	int main(void){
+3	      char s[50];
+4	      int ln;
+5	      puts("Enter String");
+6	      // scanf("%s", s);
+7	      gets(s);
+8	      ln = strlen(s); // remove this line to end seg fault
+9	      char *dyn_s = (char*) malloc (strlen(s)+1); //strlen(s) is used here as well but doesn't change outcome
+10	      dyn_s = s;
+
+
+# izmjena se nalazi u liniji 3, pri cemu je sada sa promjenljivu "s" rezervisan prostor 
+
+Breakpoint 1 at 0x11d5: file zadaca_nemanja1.c, line 2.
+
+Starting program: /home/nemanja/Desktop/PuRV/Lab vjezbe/zadaci/lab1/bin/zadaca1 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main () at zadaca_nemanja1.c:2
+2	int main(void){
+
+Watchpoint 2: s
+$1 = {0x0 <repeats 50 times>}
+
+Breakpoint 3 at 0x555555555204: file zadaca_nemanja1.c, line 8.
+Breakpoint 4 at 0x555555555213: file zadaca_nemanja1.c, line 9.
+
+5	      puts("Enter String");
+7	      gets(s);
+$2 = {0x0 <repeats 50 times>}
+1: /a s = {0x0 <repeats 50 times>}
+
+Watchpoint 2: s
+
+Old value = '\000' <repeats 49 times>
+New value = "n", '\000' <repeats 48 times>
+_IO_gets (buf=0x7fffffffdda0 "n") at ./libio/iogets.c:54
+54	./libio/iogets.c: No such file or directory.
+
+Watchpoint 2: s
+
+Old value = "n", '\000' <repeats 48 times>
+New value = "n\000\000anja", '\000' <repeats 42 times>
+__memmove_sse2_unaligned_erms () at ../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:386
+386	../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S: No such file or directory.
+Continuing.
+
+Watchpoint 2: s
+
+Old value = "n\000\000anja", '\000' <repeats 42 times>
+New value = "nemanja", '\000' <repeats 42 times>
+__memmove_sse2_unaligned_erms () at ../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:387
+387	in ../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
+Continuing.
+
+Breakpoint 3, main () at zadaca_nemanja1.c:8
+8	      ln = strlen(s); // remove this line to end seg fault
+1: /a s = {0x6e, 0x65, 0x6d, 0x61, 0x6e, 0x6a, 0x61, 0x0 <repeats 43 times>}
+Continuing.
+
+Breakpoint 4, main () at zadaca_nemanja1.c:9
+9	      char *dyn_s = (char*) malloc (strlen(s)+1); //strlen(s) is used here as well but doesn't change outcome
+1: /a s = {0x6e, 0x65, 0x6d, 0x61, 0x6e, 0x6a, 0x61, 0x0 <repeats 43 times>}
+Continuing.
+
+Watchpoint 2 deleted because the program has left the block in
+which its expression is valid.
+0x00007ffff7c29d90 in __libc_start_call_main (main=main@entry=0x5555555551c9 <main>, argc=argc@entry=1, argv=argv@entry=0x7fffffffdef8) at ../sysdeps/nptl/libc_start_call_main.h:58
+58	../sysdeps/nptl/libc_start_call_main.h: No such file or directory.
+Continuing.
+[Inferior 1 (process 12328) exited normally]
+The program is not being run.
+# ocigledno program se sada izvrsio sasvim normalno, bez greske i ispisao prethodno uneseni string 
