@@ -58,7 +58,7 @@ inline int valid_index(int idx){
 
 /* qsort compare function */
 int cmpfunc (const void * a, const void * b) {
-   return ( *(int*)b - *(int*)a );
+   return ( *(int*)a - *(int*)b );
 }
 
 /* Converts calculated priorities from matrix to an array compatible for iterating and control in thread function. */
@@ -116,8 +116,19 @@ void* cell_thread_fun(void* param){
           }
           else{
                sem_post(&calcSem);
+               usleep(1000);
           }
      }     
+}
+
+/* Function to calculate matrix of priorities */
+void calculate_priorities(int priorities[][DIMENSION]){
+     for(int i=0;i<DIMENSION;i++){
+        int offset = i * 2;
+        for(int j=0;j<DIMENSION;j++){
+            priorities[i][j] = offset++;  
+        }
+    }
 }
 
 /* Main function, cmd line arguments check and proccessing, semaphore and thread initialization and 
@@ -134,9 +145,7 @@ int main(int argc, char** argv)
      int pairs[DIMENSION*DIMENSION][3];
      pthread_t cell_threads[DIMENSION][DIMENSION];
      int priorities[DIMENSION][DIMENSION];
-     for(int i=0;i<DIMENSION;i++)
-          for(int j=0;j<DIMENSION;j++)
-               priorities[i][j] = (DIMENSION-i) + (DIMENSION-j) - 1;
+     calculate_priorities(priorities);
      priorities_to_array(priorities);
      int k=0;
      for(int i=0;i<DIMENSION;i++){
