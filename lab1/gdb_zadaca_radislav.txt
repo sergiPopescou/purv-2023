@@ -1,0 +1,92 @@
+#Za pocetak cemo pokrenuti program da vidimo kako se izvrsava.
+
+Starting program: /home/raso/lab1/zadaca_radislav 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[Inferior 1 (process 10825) exited normally]
+
+#Vidimo da se program izvrsava normalno
+#Medjutim, dodacemo breakpoint na pocetak main funkcije
+#I praticemo ponasanje funkcije i vrijednosti promjenljivih
+
+
+Breakpoint 1 at 0x55555555517c: file zadaca_radislav.c, line 2.
+
+Starting program: /home/raso/lab1/zadaca_radislav 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, main (argc=1, argv=0x7fffffffdf08) at zadaca_radislav.c:2
+2	int main(int argc, char* argv[] ){
+Dump of assembler code for function main:
+zadaca_radislav.c:
+2	int main(int argc, char* argv[] ){
+   0x0000555555555169 <+0>:	endbr64 
+   0x000055555555516d <+4>:	push   %rbp
+   0x000055555555516e <+5>:	mov    %rsp,%rbp
+   0x0000555555555171 <+8>:	sub    $0x30,%rsp
+   0x0000555555555175 <+12>:	mov    %edi,-0x24(%rbp)
+   0x0000555555555178 <+15>:	mov    %rsi,-0x30(%rbp)
+=> 0x000055555555517c <+19>:	mov    %fs:0x28,%rax
+   0x0000555555555185 <+28>:	mov    %rax,-0x8(%rbp)
+   0x0000555555555189 <+32>:	xor    %eax,%eax
+
+3		int x = 10;
+   0x000055555555518b <+34>:	movl   $0xa,-0x14(%rbp)
+
+4		int* ptr = &x;
+   0x0000555555555192 <+41>:	lea    -0x14(%rbp),%rax
+   0x0000555555555196 <+45>:	mov    %rax,-0x10(%rbp)
+
+5		ptr++;
+   0x000055555555519a <+49>:	addq   $0x4,-0x10(%rbp)
+
+6		printf("%x   %d \n",  ptr,  *ptr);  
+   0x000055555555519f <+54>:	mov    -0x10(%rbp),%rax
+   0x00005555555551a3 <+58>:	mov    (%rax),%edx
+   0x00005555555551a5 <+60>:	mov    -0x10(%rbp),%rax
+   0x00005555555551a9 <+64>:	mov    %rax,%rsi
+   0x00005555555551ac <+67>:	lea    0xe51(%rip),%rax        # 0x555555556004
+   0x00005555555551b3 <+74>:	mov    %rax,%rdi
+   0x00005555555551b6 <+77>:	mov    $0x0,%eax
+   0x00005555555551bb <+82>:	call   0x555555555070 <printf@plt>
+   0x00005555555551c0 <+87>:	mov    $0x0,%eax
+
+7	} 
+   0x00005555555551c5 <+92>:	mov    -0x8(%rbp),%rdx
+   0x00005555555551c9 <+96>:	sub    %fs:0x28,%rdx
+   0x00005555555551d2 <+105>:	je     0x5555555551d9 <main+112>
+   0x00005555555551d4 <+107>:	call   0x555555555060 <__stack_chk_fail@plt>
+   0x00005555555551d9 <+112>:	leave  
+   0x00005555555551da <+113>:	ret    
+End of assembler dump.
+
+#Od <+4> do <+28> postavlja se zastita za stack smashing
+
+3		int x = 10;
+
+4		int* ptr = &x;
+#Ispisacemo vrijednost varijabli ptr i x
+
+$1 = (int *) 0x1000
+$2 = 10
+5		ptr++;
+
+#Sada cemo da ispisemo vrijednost varijable ptr i vrijednost na koju on pokazuje 
+
+$3 = (int *) 0x7fffffffdddc
+$4 = 10
+6		printf("%x   %d \n",  ptr,  *ptr);  
+
+#Ispisacemo ponovo vrijednost na koju ptr pokazuje, te njegovu vrijednost
+
+$5 = -8736
+$6 = (int *) 0x7fffffffdde0
+
+#Vidimo da smo naredbom ptr++ uvecali zapravo vrijednost adrese, a ne vrijednost varijable, te je na taj nacin doslo do ispisivanja potpuno pogresne vrijednosti varijable
+
+7	} 
+__libc_start_call_main (main=main@entry=0x555555555169 <main>, argc=argc@entry=1, argv=argv@entry=0x7fffffffdf08) at ../sysdeps/nptl/libc_start_call_main.h:74
+74	../sysdeps/nptl/libc_start_call_main.h: No such file or directory.
+[Inferior 1 (process 10902) exited normally]
+
