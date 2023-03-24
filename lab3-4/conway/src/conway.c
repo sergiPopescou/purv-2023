@@ -8,7 +8,19 @@
 #define CALC_DIMENSION 3 /* Dimension for matrix which holds cell and neighbourg information. */
 #define NUM_OF_PRIORITIES 28 /* Number of possible priorities */
 
-int CELLS_MATRIX[DIMENSION][DIMENSION]; /* Conway game of life main matrix. */
+int CELLS_MATRIX[DIMENSION][DIMENSION] = {   
+                                             {1,0,0,1,1,0,1,1,0,0},
+                                             {1,1,0,1,1,0,1,1,0,1},
+                                             {1,1,0,1,0,1,1,1,0,0},
+                                             {0,1,0,1,0,0,1,0,0,1},
+                                             {0,0,0,1,1,1,1,1,0,0},
+                                             {1,1,1,0,0,0,1,1,0,0},
+                                             {0,1,0,0,0,0,1,1,0,0},
+                                             {0,1,0,1,1,0,0,1,0,1},
+                                             {0,0,1,1,1,0,0,1,0,0},
+                                             {1,0,0,1,0,0,0,1,0,1}
+                                        }; // TEST CASE
+//int CELLS_MATRIX[DIMENSION][DIMENSION]; /* Conway game of life main matrix. */
 int PRIORITY_IDX = 0; /* Index to next priority value to decide next cell(s) (thread(s)) for evolution. */
 int THREAD_COUNTER = 0; /* Internal counter in cell threads to control posting */
 int CELLS_TO_EVOL = 0; /* Number of cells for evolution in current post */
@@ -66,6 +78,7 @@ void* cell_thread_fun(void* param){
      int cells_scope[CALC_DIMENSION][CALC_DIMENSION];
      while(1){
           sem_wait(&cellsSem[pair[2]]);
+          //printf("CELL ([%d, %d], %d)\n", pair[0], pair[1], pair[2]);
           int idx_i = pair[0] - 1;
           int idx_j = pair[1] - 1;
           for(int i=0;i<CALC_DIMENSION;i++){
@@ -90,16 +103,15 @@ void* cell_thread_fun(void* param){
                     sem_post(&controlSem);
                }
           pthread_mutex_unlock(&thread_counter_mtx);
+          usleep(10000);
      }     
 }
 
 /* Thread function of controller thread - controls paralelization of conway cells and display of the cells matrix */
 void* controller_thread_fun(void* param){
-     int post_idx = 0;
      int i = 0;
      while(1){
           sem_wait(&controlSem);
-
                if(PRIORITY_IDX == 0 || PRIORITY_IDX == 1 || PRIORITY_IDX == 26 || PRIORITY_IDX == 27){
                     CELLS_TO_EVOL = 1;
                }
@@ -115,17 +127,16 @@ void* controller_thread_fun(void* param){
                else{
                     CELLS_TO_EVOL = 5; 
                }
-               post_idx = PRIORITY_IDX;
-               if(PRIORITY_IDX == NUM_OF_PRIORITIES - 1){
+               for(i=0;i<CELLS_TO_EVOL;i++){
+                    sem_post(&cellsSem[PRIORITY_IDX]);
+               }
+               if(PRIORITY_IDX == (NUM_OF_PRIORITIES - 1)){
                     PRIORITY_IDX = 0;
                     sem_post(&displaySem);
-                    usleep(50);
+                    sem_wait(&controlSem);
                }
                else{
                     PRIORITY_IDX++;
-               }
-               for(i=0;i<CELLS_TO_EVOL;i++){
-                    sem_post(&cellsSem[post_idx]);
                }
      }
 }
@@ -148,7 +159,6 @@ int main(int argc, char** argv)
      int priorities[DIMENSION][DIMENSION];
      pthread_t cell_threads[DIMENSION][DIMENSION];
      pthread_t controller_thread;
-     int first = 1;
      if(argc != 2){
           printf("Missing command line args !\n");
           return -1;
@@ -169,18 +179,15 @@ int main(int argc, char** argv)
                k++;
           }
      }
-     init_matrix(CELLS_MATRIX);
+     //init_matrix(CELLS_MATRIX);
      pthread_create(&controller_thread, NULL, controller_thread_fun, NULL);
      while(1){ 
           sem_wait(&displaySem);
 
           system("clear");
           print_matrix(CELLS_MATRIX);
-          fflush(stdout);
-          if(first){
-               sem_post(&controlSem);
-               first = 0;
-          }
+          sem_post(&controlSem);
+
           sleep(sleep_time);
      }
      return 0;
