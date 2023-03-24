@@ -18,7 +18,7 @@ LIBS    	= -lpthread -lrt
 SRC_DIR 	= src
 OUT_DIR		= bin
 OBJ_DIR		= obj
-EXEC_NAME 	= conway
+EXEC_NAME 	= conway.exe
 
 # May not need to  alter anything below this line
 ###############################################################################
