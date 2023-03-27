@@ -34,8 +34,9 @@ static pthread_mutex_t thread_counter_mtx = PTHREAD_MUTEX_INITIALIZER; /* Mutex 
 int calculate_conway(int cells[][CALC_DIMENSION]){
      int alive_cells = 0;
      int cell_state = cells[CALC_DIMENSION/2][CALC_DIMENSION/2];
-     for(int i=0;i<CALC_DIMENSION;i++){
-          for(int j=0;j<CALC_DIMENSION;j++){
+     int i,j;
+     for(i=0;i<CALC_DIMENSION;i++){
+          for(j=0;j<CALC_DIMENSION;j++){
                alive_cells += cells[i][j];
           }
      }
@@ -49,8 +50,9 @@ int calculate_conway(int cells[][CALC_DIMENSION]){
 
 /* Function which displays cells matrix. */
 void print_matrix(int mat[][DIMENSION]){
-     for(int i=0;i<DIMENSION;i++){
-          for(int j=0;j<DIMENSION;j++){
+     int i,j;
+     for(i=0;i<DIMENSION;i++){
+          for(j=0;j<DIMENSION;j++){
                printf("%c " , mat[i][j] == 1 ? 'o' : '.');
                if(j == DIMENSION - 1)
                     printf("\n");
@@ -60,9 +62,10 @@ void print_matrix(int mat[][DIMENSION]){
 
 /* Function which initializes cells matrix with random states. */
 void init_matrix(int mat[][DIMENSION]){
+     int i,j;
      srand(time(NULL));
-     for(int i=0;i<DIMENSION;i++)
-          for(int j=0;j<DIMENSION;j++)
+     for(i=0;i<DIMENSION;i++)
+          for(j=0;j<DIMENSION;j++)
                mat[i][j] = (rand() % 2 == 0) ? 1 : 0;
 }
 
@@ -81,8 +84,9 @@ void* cell_thread_fun(void* param){
           //printf("CELL ([%d, %d], %d)\n", pair[0], pair[1], pair[2]);
           int idx_i = pair[0] - 1;
           int idx_j = pair[1] - 1;
-          for(int i=0;i<CALC_DIMENSION;i++){
-               for(int j=0;j<CALC_DIMENSION;j++){
+          int i,j;
+          for(i=0;i<CALC_DIMENSION;i++){
+               for(j=0;j<CALC_DIMENSION;j++){
                     if(valid_index(idx_i) && valid_index(idx_j)){
                         cells_scope[i][j] = CELLS_MATRIX[idx_i][idx_j];
                     }
@@ -103,7 +107,7 @@ void* cell_thread_fun(void* param){
                     sem_post(&controlSem);
                }
           pthread_mutex_unlock(&thread_counter_mtx);
-          usleep(10000);
+          usleep(2000);
      }     
 }
 
@@ -143,9 +147,10 @@ void* controller_thread_fun(void* param){
 
 /* Function to calculate matrix of priorities */
 void calculate_priorities(int priorities[][DIMENSION]){
-     for(int i=0;i<DIMENSION;i++){
+     int i,j;
+     for(i=0;i<DIMENSION;i++){
         int offset = i * 2;
-        for(int j=0;j<DIMENSION;j++){
+        for(j=0;j<DIMENSION;j++){
             priorities[i][j] = offset++;  
         }
     }
@@ -155,6 +160,7 @@ void calculate_priorities(int priorities[][DIMENSION]){
      displaying and evolution control. */
 int main(int argc, char** argv)
 {
+     int i,j;
      int pairs[DIMENSION*DIMENSION][3];
      int priorities[DIMENSION][DIMENSION];
      pthread_t cell_threads[DIMENSION][DIMENSION];
@@ -166,12 +172,12 @@ int main(int argc, char** argv)
      int sleep_time = atoi(argv[1]);
      sem_init(&displaySem,0,1);
      sem_init(&controlSem,0,0);
-     for(int i=0;i<NUM_OF_PRIORITIES;i++)
+     for(i=0;i<NUM_OF_PRIORITIES;i++)
           sem_init(&cellsSem[i],0,0);
      calculate_priorities(priorities);
      int k=0;
-     for(int i=0;i<DIMENSION;i++){
-          for(int j=0;j<DIMENSION;j++){
+     for(i=0;i<DIMENSION;i++){
+          for(j=0;j<DIMENSION;j++){
                pairs[k][0] = i;
                pairs[k][1] = j;
                pairs[k][2] = priorities[i][j];
