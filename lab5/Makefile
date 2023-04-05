@@ -1,7 +1,10 @@
-PWD := $(shell pwd)
 obj-m += driver.o
-
+ 
+KDIR = /lib/modules/$(shell uname -r)/build
+ 
+ 
 all:
-	make ARCH=arm CROSS_COMPILE=$(TOOL_PATH)/$(CROSS_COMPILE) -C $(LINUX_SRC) SUBDIRS=$(PWD) modules
+	make -C $(KDIR)  M=$(shell pwd) modules
+ 
 clean:
-	rm -rf *.ko *.o *.symvers *.order *.mod.c *.mod.o
+	make -C $(KDIR)  M=$(shell pwd) clean

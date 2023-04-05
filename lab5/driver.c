@@ -195,6 +195,6 @@ module_init(etx_driver_init);
 module_exit(etx_driver_exit);
  
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("EmbeTronicX <embetronicx@gmail.com>");
-MODULE_DESCRIPTION("Simple Linux device driver (IOCTL)");
+MODULE_AUTHOR("Luka Vidic");
+MODULE_DESCRIPTION("IOCTL Zadaca br. 5");
 MODULE_VERSION("1.5");
