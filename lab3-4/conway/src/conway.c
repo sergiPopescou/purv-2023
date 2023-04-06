@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <string.h>
 
 #define DIMENSION 10 /* Conway game of life field dimension. */
 #define CALC_DIMENSION 3 /* Dimension for matrix which holds cell and neighbourg information. */
 #define NUM_OF_PRIORITIES 28 /* Number of possible priorities */
 
+int PREV_MATRIX[DIMENSION][DIMENSION]; 
 int CELLS_MATRIX[DIMENSION][DIMENSION] = {   
                                              {1,0,0,1,1,0,1,1,0,0},
                                              {1,1,0,1,1,0,1,1,0,1},
@@ -24,6 +26,8 @@ int CELLS_MATRIX[DIMENSION][DIMENSION] = {
 int PRIORITY_IDX = 0; /* Index to next priority value to decide next cell(s) (thread(s)) for evolution. */
 int THREAD_COUNTER = 0; /* Internal counter in cell threads to control posting */
 int CELLS_TO_EVOL = 0; /* Number of cells for evolution in current post */
+static char message[20] = ""; /* Message to send to stat file*/
+int GENERATION_COUNTER = 1; 
 
 static sem_t displaySem; /* Semaphore for main thread, which controls displaying of matrix and starts evolution. */
 static sem_t controlSem; /* Semaphore to control controller thread. */
@@ -156,6 +160,66 @@ void calculate_priorities(int priorities[][DIMENSION]){
     }
 }
 
+/* Function to copy matrix to prev state */
+void copy_old_state(){
+     int i,j;
+     for(i=0;i<DIMENSION;i++)
+          for(j=0;j<DIMENSION;j++)
+               PREV_MATRIX[i][j] = CELLS_MATRIX[i][j];
+}
+
+/* Function to generate message from current and previos matrix states*/
+void generate_message(){
+     char tmp[12];
+     int i,j;
+     int alive_cells = 0;
+     int cells_born = 0;
+     int cells_died = 0;
+     for(i=0;i<DIMENSION;i++){
+          for(j=0;j<DIMENSION;j++){
+               if(CELLS_MATRIX[i][j])
+                    alive_cells++;
+          }
+     }
+     if(GENERATION_COUNTER == 1){
+          cells_born = alive_cells;
+     }
+     else{
+          for(i=0;i<DIMENSION;i++){
+               for(j=0;j<DIMENSION;j++){
+                    if(PREV_MATRIX[i][j] && !CELLS_MATRIX[i][j])
+                         cells_died++;
+                    if(!PREV_MATRIX[i][j] && CELLS_MATRIX[i][j])
+                         cells_born++;
+               }
+          } 
+     }
+     strcpy(message,"");
+     sprintf(tmp,"%d",alive_cells);
+     strcat(message,tmp);
+     strcat(message,",");
+     sprintf(tmp,"%d",cells_born);
+     strcat(message,tmp);
+     strcat(message,",");
+     sprintf(tmp,"%d",cells_died);
+     strcat(message,tmp);
+     strcat(message,",");
+     sprintf(tmp,"%d",GENERATION_COUNTER);
+     strcat(message,tmp);
+     strcat(message,"#\0");
+     copy_old_state();
+}
+
+/* Function to check if every cell is dead */
+int all_cells_dead(){
+     int i,j;
+     for(i=0;i<DIMENSION;i++)
+          for(j=0;j<DIMENSION;j++)
+               if(CELLS_MATRIX[i][j])
+                    return 0;
+     return 1;
+}
+
 /* Main function, cmd line arguments check and proccessing, semaphore and thread initialization and 
      displaying and evolution control. */
 int main(int argc, char** argv)
@@ -192,9 +256,15 @@ int main(int argc, char** argv)
 
           system("clear");
           print_matrix(CELLS_MATRIX);
+          generate_message();
+          printf("%s\n", message);
+          if(all_cells_dead())
+               break;
           sem_post(&controlSem);
-
+          GENERATION_COUNTER++;
           sleep(sleep_time);
      }
+     system("clear");
+     printf("OVER.");
      return 0;
 }
