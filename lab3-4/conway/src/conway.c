@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <semaphore.h>
 #include <string.h>
@@ -251,20 +253,28 @@ int main(int argc, char** argv)
      }
      //init_matrix(CELLS_MATRIX);
      pthread_create(&controller_thread, NULL, controller_thread_fun, NULL);
+     int file_desc = open("/proc/conway_stat_proc", O_WRONLY);
      while(1){ 
           sem_wait(&displaySem);
 
           system("clear");
           print_matrix(CELLS_MATRIX);
           generate_message();
-          printf("%s\n", message);
+          if(file_desc >= 0)
+               write(file_desc, message, strlen(message));
           if(all_cells_dead())
                break;
           sem_post(&controlSem);
           GENERATION_COUNTER++;
           sleep(sleep_time);
      }
+     if(file_desc >= 0)
+          close(file_desc);
      system("clear");
      printf("OVER.");
+     for(i=0;i<NUM_OF_PRIORITIES;i++)
+          sem_destroy(&cellsSem[i]);
+     sem_destroy(&controlSem);
+     sem_destroy(&displaySem);
      return 0;
 }
