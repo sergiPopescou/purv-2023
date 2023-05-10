@@ -44,8 +44,18 @@ static void *resource_thread_fn(void *args){
    	pthread_mutex_lock(&mtx);
 		VALUE += prms->value;
 		printf("RT-Thread priority %d incerasing shared value to %d.\n", prms->priority, VALUE);
-		if(prms->priority == sched_get_priority_min(SCHED_RR))
-			clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
+		if(prms->priority == sched_get_priority_min(SCHED_RR)){
+			struct timespec start, end;
+			long elapsed_time;
+			clock_gettime(CLOCK_MONOTONIC, &start); // Get start time
+			while (1) {
+				clock_gettime(CLOCK_MONOTONIC, &end); 
+				elapsed_time = end.tv_sec - start.tv_sec;
+				if (elapsed_time >= 5) {
+					break;
+				}
+			}
+		}
 	pthread_mutex_unlock(&mtx);
    
    	return NULL;
@@ -136,7 +146,7 @@ int main(int argc, char *argv[]){
 		.value = 2,
 		.print_on = 0,
 		.priority = sched_get_priority_min(SCHED_RR),
-		.sleep_sec = 5
+		.sleep_sec = 0
 	};
 
    	configure_malloc_behavior();
