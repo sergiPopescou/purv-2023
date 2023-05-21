@@ -1,0 +1,11 @@
+Dat je izvorni kod drajver u fajlu cnw_sysfs.c.
+Driver komunicira sa sysfs u kontekstu cuvanja i citanja informacija o conway igri zivota. 
+Kreira se direktorijum u sysfs, te 4 fajla u kojima se cuva statistika o 
+	- generaciji 
+	- broju zivih celija
+	- broju umrlih celija
+	- broju rodjenih celija
+	
+Kreirane su i dvije aplikacije koje rade u korisnickom prostoru.
+-Jedna aplikacija je sama conway igra zivota u kojoj se racunaju gore navedene statistike, te se smjestaju u odgovarajuce fajlova ne sysfs-u.
+-Druga aplikacija sluzi za citanje tih statistika iz odgovarajucih fajlova. 
