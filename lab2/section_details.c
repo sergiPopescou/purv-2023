@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     }
     // Read the ELF header
     fread(&elf_header, sizeof(Elf64_Ehdr), 1, fp);
-    //Read the section hdr
+    //Read the section header
     fseek(fp, elf_header.e_shoff + elf_header.e_shstrndx * sizeof (section_header), SEEK_SET);
     fread(&section_header, 1, sizeof section_header, fp);
     //Section name definition
@@ -46,7 +46,6 @@ int main(int argc, char **argv)
         printf("  [%2d] ", i);
 	
 	const char* name = "";
-        //(char *)((uintptr_t)elf_header.e_shstrndx + section_header.sh_name);
 	if(section_header.sh_name){
 	name = section_name + section_header.sh_name;
         printf("%-17s \n", name);
@@ -91,21 +90,15 @@ int main(int argc, char **argv)
                 printf("       DYNSYM           ");
                 break;
             default:
-                printf("%016x ", section_header.sh_type);
+                printf("       %016x ", section_header.sh_type);
                 break;
         }
 
-        // Print the section address and offset
         printf("%016lx ", section_header.sh_addr);
         printf("%016lx ", section_header.sh_offset);
-	
         printf("%5d \n", section_header.sh_link);
-        // Print the section size and entry size
         printf("       %016lx ", section_header.sh_size);
         printf("%016lx ", section_header.sh_entsize);
-
-        // Print the section flags, link, info and alignment
-
         printf("%-20d ", section_header.sh_info);
         
         printf("%ld\n", section_header.sh_addralign);
